@@ -1,0 +1,424 @@
+import React, { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
+import useScrollVideo from './useScrollVideo'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const capabilities = [
+  {
+    id: '01',
+    title: 'Knitting',
+    copy: 'Pakistan’s largest yarn-dyed and jacquard circular knitting facility, creating fabric lines for every season.',
+    image: '/assets/editorial-knitting.webp',
+  },
+  {
+    id: '02',
+    title: 'Dyeing',
+    copy: 'An integrated supply chain that begins with greige fabric and keeps color, consistency and quality in view.',
+    image: '/assets/editorial-dyeing.webp',
+  },
+  {
+    id: '03',
+    title: 'Stitching',
+    copy: 'Apparel production at scale, backed by real-time ERP reporting and an exacting approach to delivery.',
+    image: '/assets/editorial-stitching.webp',
+  },
+  {
+    id: '04',
+    title: 'Printing',
+    copy: 'A full-service manufacturing process built to carry ideas from development through finished garments.',
+    image: '/assets/editorial-printing.webp',
+  },
+  {
+    id: '05',
+    title: 'R & D',
+    copy: 'Dedicated development across new yarns, washes, embroidery and fashion styling for commercially sharper products.',
+    image: '/assets/editorial-research.webp',
+  },
+]
+
+const values = ['Honesty & integrity', 'Dedication & accountability', 'Teamwork', 'Diversity & inclusion']
+
+function Arrow({ diagonal = false }) {
+  return (
+    <svg className="arrow-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d={diagonal ? 'M5 19 19 5M8 5h11v11' : 'M5 12h14M14 7l5 5-5 5'} />
+    </svg>
+  )
+}
+
+function App() {
+  const root = useRef(null)
+  const heroStory = useRef(null)
+  const heroVideo = useRef(null)
+  const smoothScroll = useRef(null)
+  const [activeCapability, setActiveCapability] = useState(0)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useScrollVideo(heroStory, heroVideo)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const lenis = new Lenis({ duration: 0.9, smoothWheel: true, wheelMultiplier: 0.95 })
+    smoothScroll.current = lenis
+    let rafId
+    const raf = (time) => {
+      lenis.raf(time)
+      rafId = requestAnimationFrame(raf)
+    }
+    rafId = requestAnimationFrame(raf)
+    lenis.on('scroll', ScrollTrigger.update)
+
+    const context = gsap.context(() => {
+      gsap.from('.nav-inner', { y: -30, opacity: 0, duration: 1, ease: 'power3.out' })
+      gsap.from('.hero-line > span', {
+        yPercent: 110,
+        rotate: 2,
+        duration: 1.25,
+        stagger: 0.09,
+        ease: 'power4.out',
+        delay: 0.12,
+      })
+      gsap.from('.hero-kicker, .hero-copy, .hero-actions, .hero-index', {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1,
+        delay: 0.55,
+        ease: 'power3.out',
+      })
+
+      gsap.utils.toArray('.reveal').forEach((element) => {
+        gsap.from(element, {
+          y: 55,
+          opacity: 0,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: element, start: 'top 86%', once: true },
+        })
+      })
+
+      gsap.utils.toArray('.image-reveal').forEach((element) => {
+        gsap.fromTo(
+          element,
+          { clipPath: 'inset(0 0 100% 0)' },
+          {
+            clipPath: 'inset(0 0 0% 0)',
+            duration: 1.3,
+            ease: 'power4.inOut',
+            scrollTrigger: { trigger: element, start: 'top 82%', once: true },
+          },
+        )
+      })
+
+      gsap.from('.stat-number', {
+        textContent: 0,
+        duration: 1.8,
+        snap: { textContent: 1 },
+        ease: 'power2.out',
+        scrollTrigger: { trigger: '.stats', start: 'top 78%', once: true },
+      })
+    }, root)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+      smoothScroll.current = null
+      context.revert()
+    }
+  }, [])
+
+  const scrollTo = (id) => {
+    const target = document.querySelector(id)
+    if (target) {
+      if (smoothScroll.current) smoothScroll.current.scrollTo(target)
+      else target.scrollIntoView({ behavior: 'instant' })
+    }
+    setMenuOpen(false)
+  }
+
+  return (
+    <div ref={root} className="site-shell">
+      <header className="site-nav">
+        <div className="nav-inner">
+          <button className="brand" onClick={() => scrollTo('#top')} aria-label="Galaxy Knitwear home">
+            <img src="/assets/gkc-main-logo.png" alt="" />
+            <span>Galaxy Knitwear Co.</span>
+          </button>
+
+          <nav className={menuOpen ? 'nav-links open' : 'nav-links'} aria-label="Primary navigation">
+            <button onClick={() => scrollTo('#about')}>About</button>
+            <button onClick={() => scrollTo('#capabilities')}>Capabilities</button>
+            <button onClick={() => scrollTo('#sustainability')}>Responsibility</button>
+          </nav>
+
+          <button className="nav-cta" onClick={() => scrollTo('#contact')}>
+            Start a conversation <Arrow diagonal />
+          </button>
+          <button
+            className={menuOpen ? 'menu-toggle active' : 'menu-toggle'}
+            onClick={() => setMenuOpen((value) => !value)}
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+          >
+            <span />
+            <span />
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <div id="top" className="hero-story" ref={heroStory}>
+        <section className="hero" aria-label="Galaxy Knitwear introduction">
+          <div className="hero-media" aria-hidden="true">
+            <img src="/assets/galaxy-hero-poster.png" alt="" fetchPriority="high" />
+            <video
+              ref={heroVideo}
+              className="hero-video"
+              poster="/assets/galaxy-hero-poster.png"
+              muted
+              playsInline
+              preload="auto"
+              tabIndex={-1}
+              disablePictureInPicture
+            />
+            <div className="hero-wash" />
+          </div>
+          <div className="hero-grid grid-pad">
+            <p className="hero-kicker eyebrow light">Integrated apparel manufacturing · Karachi</p>
+            <h1 className="hero-title">
+              <span className="hero-line"><span>Made with</span></span>
+              <span className="hero-line serif"><span>purpose.</span></span>
+            </h1>
+            <div className="hero-bottom">
+              <p className="hero-copy">
+                From greige fabric to finished apparel, we combine scale, innovation and care to make what’s next.
+              </p>
+              <div className="hero-actions">
+                <button className="pill-button light-button" onClick={() => scrollTo('#about')}>
+                  Discover GKC <Arrow />
+                </button>
+                <button className="text-link light" onClick={() => scrollTo('#capabilities')}>
+                  Explore capabilities <span>↘</span>
+                </button>
+              </div>
+            </div>
+            <div className="hero-index" aria-hidden="true">
+              <span>Yarn</span><i /><span>Apparel</span>
+            </div>
+            <p className="hero-scroll-cue">Scroll to follow the thread <span aria-hidden="true">↓</span></p>
+          </div>
+          <div className="brand-stitch" aria-hidden="true"><i /><i /><i /></div>
+        </section>
+        </div>
+
+        <section id="about" className="intro section-pad">
+          <div className="section-head reveal">
+            <p className="eyebrow">Who we are</p>
+            <p className="section-number">01 — 05</p>
+          </div>
+          <div className="intro-layout">
+            <h2 className="display-title reveal">
+              We make apparel that <span className="serif">moves business</span> forward.
+            </h2>
+            <div className="intro-copy reveal">
+              <p>
+                Galaxy Knitwear Company is a leading apparel manufacturer with a supply chain that runs from greige fabric to finished garments.
+              </p>
+              <p>
+                Performance, commitment and high standards of customer service have made us a trusted long-term partner to retailers across the world.
+              </p>
+            </div>
+          </div>
+
+          <div className="image-story">
+            <figure className="image-reveal story-large">
+              <img src="/assets/about.png" alt="Galaxy Knitwear team preparing a shipment" />
+              <figcaption><span>Every order, seen through</span><span>Karachi, Pakistan</span></figcaption>
+            </figure>
+            <div className="story-note reveal">
+              <span className="big-mark">GKC</span>
+              <p>Built around reliability—from development and production to quality and delivery.</p>
+            </div>
+          </div>
+
+          <div className="stats">
+            <article className="stat reveal">
+              <p><span className="stat-number">1</span><em>M</em></p>
+              <span>garments produced every month</span>
+            </article>
+            <article className="stat reveal">
+              <p><span className="stat-number">5</span></p>
+              <span>integrated core capabilities</span>
+            </article>
+            <article className="stat reveal">
+              <p><span className="stat-number">1</span><em>×</em></p>
+              <span>supply chain, from fabric to apparel</span>
+            </article>
+          </div>
+        </section>
+
+        <section id="capabilities" className="capabilities-section section-pad dark-section">
+          <div className="section-head reveal">
+            <p className="eyebrow light">What we do</p>
+            <p className="section-number light">02 — 05</p>
+          </div>
+          <div className="capability-heading reveal">
+            <h2 className="display-title light">One process.<br /><span className="serif">Endless possibility.</span></h2>
+            <p>
+              State-of-the-art machinery and our proprietary ERP system connect every step, enabling live production and quality reporting.
+            </p>
+          </div>
+
+          <div className="capability-explorer">
+            <div className="capability-list" role="list">
+              {capabilities.map((item, index) => (
+                <button
+                  className={activeCapability === index ? 'capability-row active' : 'capability-row'}
+                  key={item.title}
+                  onMouseEnter={() => setActiveCapability(index)}
+                  onFocus={() => setActiveCapability(index)}
+                  onClick={() => setActiveCapability(index)}
+                >
+                  <span className="cap-id">{item.id}</span>
+                  <span className="cap-title">{item.title}</span>
+                  <span className="cap-arrow">↗</span>
+                </button>
+              ))}
+            </div>
+            <div className="capability-preview image-reveal">
+              {capabilities.map((item, index) => (
+                <img
+                  key={item.title}
+                  className={activeCapability === index ? 'active' : ''}
+                  src={item.image}
+                  alt=""
+                />
+              ))}
+              <div className="preview-copy" aria-live="polite">
+                <span>{capabilities[activeCapability].id} / 05</span>
+                <p>{capabilities[activeCapability].copy}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="fabric-story section-pad">
+          <div className="section-head reveal">
+            <p className="eyebrow">Fabric to finished</p>
+            <p className="section-number">03 — 05</p>
+          </div>
+          <div className="fabric-grid">
+            <div className="fabric-copy">
+              <h2 className="display-title reveal">Engineered for <span className="serif">the entire journey.</span></h2>
+              <p className="reveal">
+                Fleece, single jersey, pique, thermal, interlock, flat back rib, inter rib, double knit jacquard and auto-striper jacquard—developed to keep collections fresh and competitive.
+              </p>
+              <a className="pill-button dark-button reveal" href="mailto:info@galaxyknitwearco.com">
+                Discuss a collection <Arrow />
+              </a>
+            </div>
+            <div className="fabric-images">
+              <figure className="image-reveal fabric-main">
+                <img src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Galaxy Knitwear's material palette" />
+              </figure>
+              <figure className="image-reveal fabric-detail">
+                <img src="/assets/editorial-development.webp" alt="Knit swatches and yarns in an apparel development studio" />
+                <figcaption>New yarns · washes · embroidery · styling</figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+
+        <section className="partners">
+          <div className="partner-track" aria-label="Retail partners">
+            <span>Trusted by</span>
+            <img src="/assets/vf-corp.png" alt="VF Corporation" />
+            <img src="/assets/kohls.png" alt="Kohl's" />
+            <img src="/assets/jcpenney.png" alt="JCPenney" />
+            <img src="/assets/macys.png" alt="Macy's" />
+            <img src="/assets/burlington.png" alt="Burlington" />
+          </div>
+        </section>
+
+        <section id="sustainability" className="responsibility section-pad">
+          <div className="section-head reveal">
+            <p className="eyebrow">How we think</p>
+            <p className="section-number">04 — 05</p>
+          </div>
+          <div className="responsibility-title reveal">
+            <h2 className="display-title">Progress is only real when it is <span className="serif">responsible.</span></h2>
+          </div>
+          <div className="responsibility-grid">
+            <figure className="image-reveal responsibility-image">
+              <img src="/assets/editorial-responsibility.webp" alt="Closed-loop water treatment system in a modern textile facility" />
+              <div className="orbit-stamp"><span>GO GREEN · GKC ·</span></div>
+            </figure>
+            <div className="responsibility-copy reveal">
+              <p className="lead">
+                Our ambition is clear: move toward a zero-carbon footprint and build a green factory aligned with global standards for eco-friendly textile manufacturing.
+              </p>
+              <div className="responsibility-item">
+                <span>01</span>
+                <div><h3>In-house laboratory</h3><p>Fabrics are rigorously tested before cutting, following AATCC standards for buyers.</p></div>
+              </div>
+              <div className="responsibility-item">
+                <span>02</span>
+                <div><h3>Smarter development</h3><p>Products are developed to increase customer sales, reduce costs and embody sustainability.</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="values-strip" aria-label="Our values">
+          <div className="values-track">
+            {[...values, ...values].map((value, index) => (
+              <span key={`${value}-${index}`}>{value}<i>✦</i></span>
+            ))}
+          </div>
+        </section>
+
+        <section id="contact" className="contact section-pad dark-section">
+          <div className="section-head reveal">
+            <p className="eyebrow light">Start something</p>
+            <p className="section-number light">05 — 05</p>
+          </div>
+          <div className="contact-layout">
+            <div className="contact-heading reveal">
+              <h2>Let’s make what’s <span className="serif">next.</span></h2>
+              <a className="contact-email" href="mailto:info@galaxyknitwearco.com">
+                info@galaxyknitwearco.com <Arrow diagonal />
+              </a>
+            </div>
+            <div className="contact-details reveal">
+              <div>
+                <span>Visit</span>
+                <p>A-42, 1st Floor, Block 1<br />North Nazimabad<br />Karachi 74700, Pakistan</p>
+              </div>
+              <div>
+                <span>Call</span>
+                <a href="tel:+922136624379">+92 21 36624379</a>
+              </div>
+              <div>
+                <span>Navigate</span>
+                <button onClick={() => scrollTo('#about')}>About</button>
+                <button onClick={() => scrollTo('#capabilities')}>Capabilities</button>
+                <button onClick={() => scrollTo('#sustainability')}>Responsibility</button>
+              </div>
+            </div>
+          </div>
+          <footer>
+            <div className="footer-brand"><img src="/assets/gkc-main-logo.png" alt="" /><span>Galaxy Knitwear Company</span></div>
+            <p>© {new Date().getFullYear()} GKC. Crafted for progress.</p>
+            <button onClick={() => scrollTo('#top')}>Back to top ↑</button>
+          </footer>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+export default App
