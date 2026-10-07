@@ -144,9 +144,9 @@ function App() {
     <div ref={root} className="site-shell">
       <header className="site-nav">
         <div className="nav-inner">
-          <button className="brand" onClick={() => scrollTo('#top')} aria-label="Galaxy Knitwear home">
-            <img src="/assets/gkc-main-logo.png" alt="" />
-            <span>Galaxy Knitwear Co.</span>
+          <button className="brand" onClick={() => scrollTo('#top')} aria-label="Silver Textile home">
+            <img src="/assets/silver-textile-logo.svg" alt="" />
+            <span>Silver Textile</span>
           </button>
 
           <nav className={menuOpen ? 'nav-links open' : 'nav-links'} aria-label="Primary navigation">
@@ -172,13 +172,13 @@ function App() {
 
       <main>
         <div id="top" className="hero-story" ref={heroStory}>
-        <section className="hero" aria-label="Galaxy Knitwear introduction">
+        <section className="hero" aria-label="Silver Textile introduction">
           <div className="hero-media" aria-hidden="true">
-            <img src="/assets/galaxy-hero-poster.png" alt="" fetchPriority="high" />
+            <img src="/assets/silver-textile-hero-poster.png" alt="" fetchPriority="high" />
             <video
               ref={heroVideo}
               className="hero-video"
-              poster="/assets/galaxy-hero-poster.png"
+              poster="/assets/silver-textile-hero-poster.png"
               muted
               playsInline
               preload="auto"
@@ -199,7 +199,7 @@ function App() {
               </p>
               <div className="hero-actions">
                 <button className="pill-button light-button" onClick={() => scrollTo('#about')}>
-                  Discover GKC <Arrow />
+                  Discover ST <Arrow />
                 </button>
                 <button className="text-link light" onClick={() => scrollTo('#capabilities')}>
                   Explore capabilities <span>↘</span>
@@ -226,7 +226,7 @@ function App() {
             </h2>
             <div className="intro-copy reveal">
               <p>
-                Galaxy Knitwear Company is a leading apparel manufacturer with a supply chain that runs from greige fabric to finished garments.
+                Silver Textile is a leading apparel manufacturer with a supply chain that runs from greige fabric to finished garments.
               </p>
               <p>
                 Performance, commitment and high standards of customer service have made us a trusted long-term partner to retailers across the world.
@@ -236,11 +236,11 @@ function App() {
 
           <div className="image-story">
             <figure className="image-reveal story-large">
-              <img src="/assets/about.png" alt="Galaxy Knitwear team preparing a shipment" />
+              <img src="/assets/silver-textile-about.webp" alt="Silver Textile team preparing a finished apparel shipment" />
               <figcaption><span>Every order, seen through</span><span>Karachi, Pakistan</span></figcaption>
             </figure>
             <div className="story-note reveal">
-              <span className="big-mark">GKC</span>
+              <span className="big-mark">ST</span>
               <p>Built around reliability—from development and production to quality and delivery.</p>
             </div>
           </div>
@@ -317,13 +317,13 @@ function App() {
               <p className="reveal">
                 Fleece, single jersey, pique, thermal, interlock, flat back rib, inter rib, double knit jacquard and auto-striper jacquard—developed to keep collections fresh and competitive.
               </p>
-              <a className="pill-button dark-button reveal" href="mailto:info@galaxyknitwearco.com">
+              <a className="pill-button dark-button reveal" href="mailto:hello@silvertextile.co">
                 Discuss a collection <Arrow />
               </a>
             </div>
             <div className="fabric-images">
               <figure className="image-reveal fabric-main">
-                <img src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Galaxy Knitwear's material palette" />
+                <img src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Silver Textile's material palette" />
               </figure>
               <figure className="image-reveal fabric-detail">
                 <img src="/assets/editorial-development.webp" alt="Knit swatches and yarns in an apparel development studio" />
@@ -355,7 +355,7 @@ function App() {
           <div className="responsibility-grid">
             <figure className="image-reveal responsibility-image">
               <img src="/assets/editorial-responsibility.webp" alt="Closed-loop water treatment system in a modern textile facility" />
-              <div className="orbit-stamp"><span>GO GREEN · GKC ·</span></div>
+              <div className="orbit-stamp"><span>GO GREEN · ST ·</span></div>
             </figure>
             <div className="responsibility-copy reveal">
               <p className="lead">
@@ -389,18 +389,18 @@ function App() {
           <div className="contact-layout">
             <div className="contact-heading reveal">
               <h2>Let’s make what’s <span className="serif">next.</span></h2>
-              <a className="contact-email" href="mailto:info@galaxyknitwearco.com">
-                info@galaxyknitwearco.com <Arrow diagonal />
+              <a className="contact-email" href="mailto:hello@silvertextile.co">
+                hello@silvertextile.co <Arrow diagonal />
               </a>
             </div>
             <div className="contact-details reveal">
               <div>
                 <span>Visit</span>
-                <p>A-42, 1st Floor, Block 1<br />North Nazimabad<br />Karachi 74700, Pakistan</p>
+                <p>Plot 00, Silver Avenue<br />Textile District<br />Karachi 00000, Pakistan</p>
               </div>
               <div>
                 <span>Call</span>
-                <a href="tel:+922136624379">+92 21 36624379</a>
+                <a href="tel:+923000000000">+92 300 000 0000</a>
               </div>
               <div>
                 <span>Navigate</span>
@@ -411,8 +411,8 @@ function App() {
             </div>
           </div>
           <footer>
-            <div className="footer-brand"><img src="/assets/gkc-main-logo.png" alt="" /><span>Galaxy Knitwear Company</span></div>
-            <p>© {new Date().getFullYear()} GKC. Crafted for progress.</p>
+            <div className="footer-brand"><img src="/assets/silver-textile-logo.svg" alt="" /><span>Silver Textile</span></div>
+            <p>© {new Date().getFullYear()} ST. Crafted for progress.</p>
             <button onClick={() => scrollTo('#top')}>Back to top ↑</button>
           </footer>
         </section>

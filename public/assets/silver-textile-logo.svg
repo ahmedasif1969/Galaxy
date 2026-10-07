@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 88" role="img" aria-labelledby="title desc">
+  <title id="title">Silver Textile</title>
+  <desc id="desc">An abstract woven S made from silver and teal threads.</desc>
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f6f7"/>
+      <stop offset="0.5" stop-color="#aeb8bd"/>
+      <stop offset="1" stop-color="#e2e7e9"/>
+    </linearGradient>
+  </defs>
+  <path d="M98 18C84 9 39 8 25 24 9 43 34 49 58 51c22 2 39 7 34 19-6 14-45 14-67 1" fill="none" stroke="url(#silver)" stroke-width="11" stroke-linecap="round"/>
+  <path d="M91 25C73 17 42 17 32 28c-8 9 7 14 29 16 30 3 47 12 37 30" fill="none" stroke="#278f8a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M21 66h35M64 22h34" fill="none" stroke="#59666c" stroke-width="3" stroke-linecap="round"/>
+</svg>

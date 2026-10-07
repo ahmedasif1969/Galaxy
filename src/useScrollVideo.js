@@ -62,7 +62,7 @@ export default function useScrollVideo(storyRef, videoRef) {
 
       video.addEventListener('loadeddata', setup)
       video.addEventListener('error', fail)
-      video.src = '/assets/galaxy-hero-scrub.mp4'
+      video.src = '/assets/silver-textile-hero-scrub.mp4'
       video.load()
       if (video.readyState >= 2) setup()
 
