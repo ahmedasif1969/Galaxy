@@ -40,6 +40,14 @@ const capabilities = [
   },
 ]
 
+const capabilityDetails = [
+  { process: 'Circular knitting · yarn-dyed structures · jacquards', materials: 'Single jersey, pique, interlock and double knit jacquard', benefit: 'Build a fabric direction around the feel and structure of your collection.' },
+  { process: 'Greige fabric · color development · finishing', materials: 'Knitted fabric developed for consistent color and handle', benefit: 'Keep the material story connected as fabric moves through production.' },
+  { process: 'Cutting · assembly · production reporting', materials: 'Finished apparel made from the developed fabric range', benefit: 'Follow your collection from fabric through garment construction.' },
+  { process: 'Artwork development · application · finished detail', materials: 'Print-led apparel and collection-specific surface details', benefit: 'Carry your creative direction into the finished garment.' },
+  { process: 'Yarn exploration · wash development · styling', materials: 'New yarns, embroidery, washes and seasonal fabric ideas', benefit: 'Explore material and finish options before defining your collection.' },
+]
+
 const values = ['Honesty & integrity', 'Dedication & accountability', 'Teamwork', 'Diversity & inclusion']
 
 function Arrow({ diagonal = false }) {
@@ -72,6 +80,7 @@ function App() {
     rafId = requestAnimationFrame(raf)
     lenis.on('scroll', ScrollTrigger.update)
 
+    let responsiveMotion
     const context = gsap.context(() => {
       gsap.from('.nav-inner', { y: -30, opacity: 0, duration: 1, ease: 'power3.out' })
       gsap.from('.hero-line > span', {
@@ -114,6 +123,19 @@ function App() {
         )
       })
 
+      responsiveMotion = gsap.matchMedia()
+      responsiveMotion.add('(min-width: 901px)', () => {
+        ScrollTrigger.create({ trigger: '.material-atlas', start: 'top top', end: 'bottom bottom', pin: '.material-heading', pinSpacing: false })
+        gsap.utils.toArray('.material-panel').forEach((panel) => {
+          gsap.fromTo(panel, { y: 70, opacity: 0.45 }, { y: 0, opacity: 1, ease: 'none', scrollTrigger: { trigger: panel, start: 'top 90%', end: 'top 35%', scrub: 0.6 } })
+        })
+      })
+      gsap.utils.toArray('.material-photo img, .fabric-main img, .responsibility-image img').forEach((element) => {
+        gsap.fromTo(element, { scale: 1.12 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: element.parentElement, start: 'top bottom', end: 'bottom top', scrub: 0.8 } })
+      })
+      const words = gsap.utils.toArray('.responsibility-title .reveal-word')
+      gsap.fromTo(words, { opacity: 0.25 }, { opacity: 1, stagger: 0.12, ease: 'none', scrollTrigger: { trigger: '.responsibility-title', start: 'top 85%', end: 'bottom 45%', scrub: 0.7 } })
+
       gsap.from('.stat-number', {
         textContent: 0,
         duration: 1.8,
@@ -127,6 +149,7 @@ function App() {
       cancelAnimationFrame(rafId)
       lenis.destroy()
       smoothScroll.current = null
+      responsiveMotion?.revert()
       context.revert()
     }
   }, [])
@@ -195,7 +218,7 @@ function App() {
             </h1>
             <div className="hero-bottom">
               <p className="hero-copy">
-                From greige fabric to finished apparel, we combine scale, innovation and care to make what’s next.
+                Integrated textile and apparel manufacturing—from fabric development to finished garments, built for global brands.
               </p>
               <div className="hero-actions">
                 <button className="pill-button light-button" onClick={() => scrollTo('#about')}>
@@ -274,11 +297,23 @@ function App() {
           </div>
 
           <div className="capability-explorer">
-            <div className="capability-list" role="list">
+            <div className="capability-list" role="tablist" aria-label="Manufacturing capabilities" aria-orientation="vertical">
               {capabilities.map((item, index) => (
                 <button
                   className={activeCapability === index ? 'capability-row active' : 'capability-row'}
                   key={item.title}
+                  role="tab"
+                  id={`capability-tab-${index}`}
+                  aria-selected={activeCapability === index}
+                  aria-controls="capability-panel"
+                  onKeyDown={(event) => {
+                    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+                      event.preventDefault()
+                      const next = event.key === 'Home' ? 0 : event.key === 'End' ? capabilities.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + capabilities.length) % capabilities.length
+                      setActiveCapability(next)
+                      document.getElementById(`capability-tab-${next}`)?.focus()
+                    }
+                  }}
                   onMouseEnter={() => setActiveCapability(index)}
                   onFocus={() => setActiveCapability(index)}
                   onClick={() => setActiveCapability(index)}
@@ -289,7 +324,7 @@ function App() {
                 </button>
               ))}
             </div>
-            <div className="capability-preview image-reveal">
+            <div className="capability-display" id="capability-panel" role="tabpanel" aria-labelledby={`capability-tab-${activeCapability}`}><div className="capability-preview image-reveal">
               {capabilities.map((item, index) => (
                 <img
                   key={item.title}
@@ -303,6 +338,10 @@ function App() {
                 <p>{capabilities[activeCapability].copy}</p>
               </div>
             </div>
+            <div className="capability-detail" aria-live="polite">
+              <p className="capability-benefit">{capabilityDetails[activeCapability].benefit}</p>
+              <dl><div><dt>Process</dt><dd>{capabilityDetails[activeCapability].process}</dd></div><div><dt>Material & output</dt><dd>{capabilityDetails[activeCapability].materials}</dd></div></dl>
+            </div></div>
           </div>
         </section>
 
@@ -333,6 +372,15 @@ function App() {
           </div>
         </section>
 
+        <section className="material-atlas section-pad" aria-labelledby="material-title">
+          <div className="material-heading reveal"><p className="eyebrow">A closer look</p><h2 id="material-title" className="display-title">The difference is <span className="serif">in the detail.</span></h2><p>Explore the textures, construction and finishing details that give a collection its character.</p></div>
+          <div className="material-panels">
+            <figure className="material-panel"><div className="material-photo"><img loading="lazy" src="/assets/editorial-development.webp" alt="Textured knit swatches beside yarn cones" /></div><figcaption><span>01 / Material</span><h3>Start with the handfeel.</h3><p>Yarn, texture and knit structure set the direction for everything that follows.</p></figcaption></figure>
+            <figure className="material-panel"><div className="material-photo"><img loading="lazy" src="/assets/editorial-stitching.webp" alt="Garment stitching and construction detail" /></div><figcaption><span>02 / Construction</span><h3>Consider every seam.</h3><p>Construction brings the material together, shaping how a garment feels and moves.</p></figcaption></figure>
+            <figure className="material-panel"><div className="material-photo"><img loading="lazy" src="/assets/editorial-collection.webp" alt="Finished knitwear in a coordinated collection" /></div><figcaption><span>03 / Collection</span><h3>Bring the vision together.</h3><p>Color, finish and styling turn individual pieces into a coherent collection.</p></figcaption></figure>
+          </div>
+        </section>
+
         <section className="partners">
           <div className="partner-track" aria-label="Retail partners">
             <span>Trusted by</span>
@@ -341,6 +389,12 @@ function App() {
             <img src="/assets/jcpenney.png" alt="JCPenney" />
             <img src="/assets/macys.png" alt="Macy's" />
             <img src="/assets/burlington.png" alt="Burlington" />
+            <span aria-hidden="true">Trusted by</span>
+            <img src="/assets/vf-corp.png" alt="" aria-hidden="true" />
+            <img src="/assets/kohls.png" alt="" aria-hidden="true" />
+            <img src="/assets/jcpenney.png" alt="" aria-hidden="true" />
+            <img src="/assets/macys.png" alt="" aria-hidden="true" />
+            <img src="/assets/burlington.png" alt="" aria-hidden="true" />
           </div>
         </section>
 
@@ -350,7 +404,7 @@ function App() {
             <p className="section-number">04 — 05</p>
           </div>
           <div className="responsibility-title reveal">
-            <h2 className="display-title">Progress is only real when it is <span className="serif">responsible.</span></h2>
+            <h2 className="display-title">{'Progress is only real when it is'.split(' ').map((word, index) => <React.Fragment key={index}><span className="reveal-word">{word}</span>{' '}</React.Fragment>)}<span className="serif reveal-word">responsible.</span></h2>
           </div>
           <div className="responsibility-grid">
             <figure className="image-reveal responsibility-image">
