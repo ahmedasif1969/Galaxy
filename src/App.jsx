@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
-import useScrollVideo from './useScrollVideo'
+import useScrollSequence from './useScrollSequence'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -61,12 +61,12 @@ function Arrow({ diagonal = false }) {
 function App() {
   const root = useRef(null)
   const heroStory = useRef(null)
-  const heroVideo = useRef(null)
+  const heroCanvas = useRef(null)
   const smoothScroll = useRef(null)
   const [activeCapability, setActiveCapability] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  useScrollVideo(heroStory, heroVideo)
+  useScrollSequence(heroStory, heroCanvas)
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -198,16 +198,7 @@ function App() {
         <section className="hero" aria-label="Silver Textile introduction">
           <div className="hero-media" aria-hidden="true">
             <img src="/assets/silver-textile-hero-poster.png" alt="" fetchPriority="high" />
-            <video
-              ref={heroVideo}
-              className="hero-video"
-              poster="/assets/silver-textile-hero-poster.png"
-              muted
-              playsInline
-              preload="auto"
-              tabIndex={-1}
-              disablePictureInPicture
-            />
+            <canvas ref={heroCanvas} className="hero-sequence" aria-hidden="true" />
             <div className="hero-wash" />
           </div>
           <div className="hero-grid grid-pad">
