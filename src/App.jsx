@@ -48,6 +48,13 @@ const capabilityDetails = [
   { process: 'Yarn exploration · wash development · styling', materials: 'New yarns, embroidery, washes and seasonal fabric ideas', benefit: 'Explore material and finish options before defining your collection.' },
 ]
 
+const heroChapters = [
+  { first: 'Made with', second: 'purpose.', copy: 'Integrated textile and apparel manufacturing—from fabric development to finished garments, built for global brands.' },
+  { first: 'From a', second: 'thread.', copy: 'Every collection begins with a material. Yarn, texture and structure shape the possibilities.' },
+  { first: 'Made with', second: 'care.', copy: 'Development, knitting, dyeing and stitching bring the details together, one step at a time.' },
+  { first: 'Ready for', second: 'the world.', copy: 'From the first fabric to the finished collection. Apparel made to carry your vision forward.' },
+]
+
 const values = ['Honesty & integrity', 'Dedication & accountability', 'Teamwork', 'Diversity & inclusion']
 
 function Arrow({ diagonal = false }) {
@@ -66,7 +73,9 @@ function App() {
   const [activeCapability, setActiveCapability] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  useScrollSequence(heroStory, heroCanvas)
+  const [heroChapter, setHeroChapter] = useState(0)
+
+  useScrollSequence(heroStory, heroCanvas, setHeroChapter)
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -83,7 +92,7 @@ function App() {
     let responsiveMotion
     const context = gsap.context(() => {
       gsap.from('.nav-inner', { y: -30, opacity: 0, duration: 1, ease: 'power3.out' })
-      gsap.from('.hero-line > span', {
+      gsap.from('.hero-title', {
         yPercent: 110,
         rotate: 2,
         duration: 1.25,
@@ -203,14 +212,22 @@ function App() {
           </div>
           <div className="hero-grid grid-pad">
             <p className="hero-kicker eyebrow light">Integrated apparel manufacturing · Karachi</p>
-            <h1 className="hero-title">
-              <span className="hero-line"><span>Made with</span></span>
-              <span className="hero-line serif"><span>purpose.</span></span>
+            <h1 className="hero-title hero-narrative" aria-label={`${heroChapters[heroChapter].first} ${heroChapters[heroChapter].second}`}>
+              {heroChapters.map((chapter, index) => (
+                <span className={`hero-chapter${index === heroChapter ? ' is-active' : ''}`} key={chapter.second} aria-hidden="true">
+                  <span className="hero-line"><span>{chapter.first}</span></span>
+                  <span className="hero-line serif"><span>{chapter.second}</span></span>
+                </span>
+              ))}
             </h1>
             <div className="hero-bottom">
-              <p className="hero-copy">
-                Integrated textile and apparel manufacturing—from fabric development to finished garments, built for global brands.
-              </p>
+              <div className="hero-copy hero-copy-narrative">
+                {heroChapters.map((chapter, index) => (
+                  <p className={`hero-chapter-copy${index === heroChapter ? ' is-active' : ''}`} key={chapter.second} aria-hidden={index !== heroChapter}>
+                    {chapter.copy}
+                  </p>
+                ))}
+              </div>
               <div className="hero-actions">
                 <button className="pill-button light-button" onClick={() => scrollTo('#about')}>
                   Discover ST <Arrow />

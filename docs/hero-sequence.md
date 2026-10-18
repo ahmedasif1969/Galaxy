@@ -41,3 +41,7 @@ The hero's sticky scroll duration stays fixed; a large scroll can take the hero 
 node --test tests/frameBacklog.test.js
 npm run build
 ```
+
+## Scroll narrative
+
+The displayed frame also selects one of four hero chapters: Made with purpose (0-54), From a thread (55-108), Made with care (109-162), and Ready for the world (163-216). Headings and supporting copy fade between chapters. They follow actual playback, including the backlog and reverse motion. The hero actions remain in a shared, fixed layout footprint across all chapters. Reduced-motion visitors see the opening chapter.

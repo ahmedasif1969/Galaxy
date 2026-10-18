@@ -5,7 +5,7 @@ import { FrameBacklog } from './frameBacklog'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function useScrollSequence(storyRef, canvasRef) {
+export default function useScrollSequence(storyRef, canvasRef, onChapterChange) {
   useEffect(() => {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
@@ -24,6 +24,7 @@ export default function useScrollSequence(storyRef, canvasRef) {
       let manifest
       let lastPaint = 0
       let ready = false
+      let chapter = 0
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
       const cacheLimit = variant === 'mobile' ? 10 : 14
@@ -88,6 +89,11 @@ export default function useScrollSequence(storyRef, canvasRef) {
         context.drawImage(bitmap, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height)
         story.style.setProperty('--film-progress', index / Math.max(1, manifest.frameCount - 1))
         story.dataset.displayedFrame = String(index)
+        const nextChapter = Math.min(3, Math.floor(index / manifest.frameCount * 4))
+        if (nextChapter !== chapter) {
+          chapter = nextChapter
+          onChapterChange(chapter)
+        }
         return true
       }
       const prefetch = () => {
@@ -185,8 +191,9 @@ export default function useScrollSequence(storyRef, canvasRef) {
         blobs.clear()
         for (const key of ['sequenceReady', 'sequenceState', 'displayedFrame', 'targetFrame', 'backlog']) delete story.dataset[key]
         story.style.removeProperty('--film-progress')
+        onChapterChange(0)
       }
     })
     return () => media.revert()
-  }, [storyRef, canvasRef])
+  }, [storyRef, canvasRef, onChapterChange])
 }
