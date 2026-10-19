@@ -65,6 +65,31 @@ function Arrow({ diagonal = false }) {
   )
 }
 
+function DeferredImage({ enabled = true, src, ...props }) {
+  const imageRef = useRef(null)
+  const [requested, setRequested] = useState(false)
+
+  useEffect(() => {
+    if (!enabled || requested) return
+    const image = imageRef.current
+    if (!image || !('IntersectionObserver' in window)) {
+      setRequested(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setRequested(true)
+        observer.disconnect()
+      }
+    }, { rootMargin: '400px 0px' })
+    observer.observe(image)
+    return () => observer.disconnect()
+  }, [enabled, requested])
+
+  return <img ref={imageRef} src={requested ? src : undefined} loading="lazy" decoding="async" {...props} />
+}
+
 function App() {
   const root = useRef(null)
   const heroStory = useRef(null)
@@ -270,7 +295,7 @@ function App() {
 
           <div className="image-story">
             <figure className="image-reveal story-large">
-              <img loading="lazy" decoding="async" src="/assets/silver-textile-about.webp" alt="Silver Textile team preparing a finished apparel shipment" />
+              <DeferredImage src="/assets/silver-textile-about.webp" alt="Silver Textile team preparing a finished apparel shipment" />
               <figcaption><span>Every order, seen through</span><span>Karachi, Pakistan</span></figcaption>
             </figure>
             <div className="story-note reveal">
@@ -337,7 +362,7 @@ function App() {
             </div>
             <div className="capability-display" id="capability-panel" role="tabpanel" aria-labelledby={`capability-tab-${activeCapability}`}><div className="capability-preview image-reveal">
               {capabilities.map((item, index) => (
-                <img loading="lazy" decoding="async"
+                <DeferredImage enabled={activeCapability === index}
                   key={item.title}
                   className={activeCapability === index ? 'active' : ''}
                   src={item.image}
@@ -373,10 +398,10 @@ function App() {
             </div>
             <div className="fabric-images">
               <figure className="image-reveal fabric-main">
-                <img loading="lazy" decoding="async" src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Silver Textile's material palette" />
+                <DeferredImage src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Silver Textile's material palette" />
               </figure>
               <figure className="image-reveal fabric-detail">
-                <img loading="lazy" decoding="async" src="/assets/editorial-development.webp" alt="Knit swatches and yarns in an apparel development studio" />
+                <DeferredImage src="/assets/editorial-development.webp" alt="Knit swatches and yarns in an apparel development studio" />
                 <figcaption>New yarns · washes · embroidery · styling</figcaption>
               </figure>
             </div>
@@ -386,26 +411,26 @@ function App() {
         <section className="material-atlas section-pad" aria-labelledby="material-title">
           <div className="material-heading reveal"><p className="eyebrow">A closer look</p><h2 id="material-title" className="display-title">The difference is <span className="serif">in the detail.</span></h2><p>Explore the textures, construction and finishing details that give a collection its character.</p></div>
           <div className="material-panels">
-            <figure className="material-panel"><div className="material-photo"><img loading="lazy" src="/assets/editorial-development.webp" alt="Textured knit swatches beside yarn cones" /></div><figcaption><span>01 / Material</span><h3>Start with the handfeel.</h3><p>Yarn, texture and knit structure set the direction for everything that follows.</p></figcaption></figure>
-            <figure className="material-panel"><div className="material-photo"><img loading="lazy" src="/assets/editorial-stitching.webp" alt="Garment stitching and construction detail" /></div><figcaption><span>02 / Construction</span><h3>Consider every seam.</h3><p>Construction brings the material together, shaping how a garment feels and moves.</p></figcaption></figure>
-            <figure className="material-panel"><div className="material-photo"><img loading="lazy" src="/assets/editorial-collection.webp" alt="Finished knitwear in a coordinated collection" /></div><figcaption><span>03 / Collection</span><h3>Bring the vision together.</h3><p>Color, finish and styling turn individual pieces into a coherent collection.</p></figcaption></figure>
+            <figure className="material-panel"><div className="material-photo"><DeferredImage src="/assets/editorial-development.webp" alt="Textured knit swatches beside yarn cones" /></div><figcaption><span>01 / Material</span><h3>Start with the handfeel.</h3><p>Yarn, texture and knit structure set the direction for everything that follows.</p></figcaption></figure>
+            <figure className="material-panel"><div className="material-photo"><DeferredImage src="/assets/editorial-stitching.webp" alt="Garment stitching and construction detail" /></div><figcaption><span>02 / Construction</span><h3>Consider every seam.</h3><p>Construction brings the material together, shaping how a garment feels and moves.</p></figcaption></figure>
+            <figure className="material-panel"><div className="material-photo"><DeferredImage src="/assets/editorial-collection.webp" alt="Finished knitwear in a coordinated collection" /></div><figcaption><span>03 / Collection</span><h3>Bring the vision together.</h3><p>Color, finish and styling turn individual pieces into a coherent collection.</p></figcaption></figure>
           </div>
         </section>
 
         <section className="partners">
           <div className="partner-track" aria-label="Retail partners">
             <span>Trusted by</span>
-            <img loading="lazy" decoding="async" src="/assets/vf-corp.png" alt="VF Corporation" />
-            <img loading="lazy" decoding="async" src="/assets/kohls.png" alt="Kohl's" />
-            <img loading="lazy" decoding="async" src="/assets/jcpenney.png" alt="JCPenney" />
-            <img loading="lazy" decoding="async" src="/assets/macys.png" alt="Macy's" />
-            <img loading="lazy" decoding="async" src="/assets/burlington.png" alt="Burlington" />
+            <DeferredImage src="/assets/vf-corp.png" alt="VF Corporation" />
+            <DeferredImage src="/assets/kohls.png" alt="Kohl's" />
+            <DeferredImage src="/assets/jcpenney.png" alt="JCPenney" />
+            <DeferredImage src="/assets/macys.png" alt="Macy's" />
+            <DeferredImage src="/assets/burlington.png" alt="Burlington" />
             <span aria-hidden="true">Trusted by</span>
-            <img loading="lazy" decoding="async" src="/assets/vf-corp.png" alt="" aria-hidden="true" />
-            <img loading="lazy" decoding="async" src="/assets/kohls.png" alt="" aria-hidden="true" />
-            <img loading="lazy" decoding="async" src="/assets/jcpenney.png" alt="" aria-hidden="true" />
-            <img loading="lazy" decoding="async" src="/assets/macys.png" alt="" aria-hidden="true" />
-            <img loading="lazy" decoding="async" src="/assets/burlington.png" alt="" aria-hidden="true" />
+            <DeferredImage src="/assets/vf-corp.png" alt="" aria-hidden="true" />
+            <DeferredImage src="/assets/kohls.png" alt="" aria-hidden="true" />
+            <DeferredImage src="/assets/jcpenney.png" alt="" aria-hidden="true" />
+            <DeferredImage src="/assets/macys.png" alt="" aria-hidden="true" />
+            <DeferredImage src="/assets/burlington.png" alt="" aria-hidden="true" />
           </div>
         </section>
 
@@ -419,7 +444,7 @@ function App() {
           </div>
           <div className="responsibility-grid">
             <figure className="image-reveal responsibility-image">
-              <img loading="lazy" decoding="async" src="/assets/editorial-responsibility.webp" alt="Closed-loop water treatment system in a modern textile facility" />
+              <DeferredImage src="/assets/editorial-responsibility.webp" alt="Closed-loop water treatment system in a modern textile facility" />
               <div className="orbit-stamp"><span>GO GREEN · ST ·</span></div>
             </figure>
             <div className="responsibility-copy reveal">
@@ -476,7 +501,7 @@ function App() {
             </div>
           </div>
           <footer>
-            <div className="footer-brand"><img loading="lazy" decoding="async" src="/assets/silver-textile-logo.svg" alt="" /><span>Silver Textile</span></div>
+            <div className="footer-brand"><DeferredImage src="/assets/silver-textile-logo.svg" alt="" /><span>Silver Textile</span></div>
             <p>© {new Date().getFullYear()} ST. Crafted for progress.</p>
             <button onClick={() => scrollTo('#top')}>Back to top ↑</button>
           </footer>
