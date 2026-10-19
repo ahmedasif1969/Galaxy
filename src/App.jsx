@@ -206,7 +206,10 @@ function App() {
         <div id="top" className="hero-story" ref={heroStory}>
         <section className="hero" aria-label="Silver Textile introduction">
           <div className="hero-media" aria-hidden="true">
-            <img src="/assets/silver-textile-hero-poster.png" alt="" fetchPriority="high" />
+            <picture>
+              <source media="(max-width: 900px)" srcSet="/assets/hero-sequence/mobile/frame-0000.webp" />
+              <img src="/assets/hero-sequence/desktop/frame-0000.webp" alt="" fetchPriority="high" loading="eager" crossOrigin="anonymous" />
+            </picture>
             <canvas ref={heroCanvas} className="hero-sequence" aria-hidden="true" />
             <div className="hero-wash" />
           </div>
@@ -267,7 +270,7 @@ function App() {
 
           <div className="image-story">
             <figure className="image-reveal story-large">
-              <img src="/assets/silver-textile-about.webp" alt="Silver Textile team preparing a finished apparel shipment" />
+              <img loading="lazy" decoding="async" src="/assets/silver-textile-about.webp" alt="Silver Textile team preparing a finished apparel shipment" />
               <figcaption><span>Every order, seen through</span><span>Karachi, Pakistan</span></figcaption>
             </figure>
             <div className="story-note reveal">
@@ -334,7 +337,7 @@ function App() {
             </div>
             <div className="capability-display" id="capability-panel" role="tabpanel" aria-labelledby={`capability-tab-${activeCapability}`}><div className="capability-preview image-reveal">
               {capabilities.map((item, index) => (
-                <img
+                <img loading="lazy" decoding="async"
                   key={item.title}
                   className={activeCapability === index ? 'active' : ''}
                   src={item.image}
@@ -370,10 +373,10 @@ function App() {
             </div>
             <div className="fabric-images">
               <figure className="image-reveal fabric-main">
-                <img src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Silver Textile's material palette" />
+                <img loading="lazy" decoding="async" src="/assets/editorial-collection.webp" alt="Premium knitwear collection in Silver Textile's material palette" />
               </figure>
               <figure className="image-reveal fabric-detail">
-                <img src="/assets/editorial-development.webp" alt="Knit swatches and yarns in an apparel development studio" />
+                <img loading="lazy" decoding="async" src="/assets/editorial-development.webp" alt="Knit swatches and yarns in an apparel development studio" />
                 <figcaption>New yarns · washes · embroidery · styling</figcaption>
               </figure>
             </div>
@@ -392,17 +395,17 @@ function App() {
         <section className="partners">
           <div className="partner-track" aria-label="Retail partners">
             <span>Trusted by</span>
-            <img src="/assets/vf-corp.png" alt="VF Corporation" />
-            <img src="/assets/kohls.png" alt="Kohl's" />
-            <img src="/assets/jcpenney.png" alt="JCPenney" />
-            <img src="/assets/macys.png" alt="Macy's" />
-            <img src="/assets/burlington.png" alt="Burlington" />
+            <img loading="lazy" decoding="async" src="/assets/vf-corp.png" alt="VF Corporation" />
+            <img loading="lazy" decoding="async" src="/assets/kohls.png" alt="Kohl's" />
+            <img loading="lazy" decoding="async" src="/assets/jcpenney.png" alt="JCPenney" />
+            <img loading="lazy" decoding="async" src="/assets/macys.png" alt="Macy's" />
+            <img loading="lazy" decoding="async" src="/assets/burlington.png" alt="Burlington" />
             <span aria-hidden="true">Trusted by</span>
-            <img src="/assets/vf-corp.png" alt="" aria-hidden="true" />
-            <img src="/assets/kohls.png" alt="" aria-hidden="true" />
-            <img src="/assets/jcpenney.png" alt="" aria-hidden="true" />
-            <img src="/assets/macys.png" alt="" aria-hidden="true" />
-            <img src="/assets/burlington.png" alt="" aria-hidden="true" />
+            <img loading="lazy" decoding="async" src="/assets/vf-corp.png" alt="" aria-hidden="true" />
+            <img loading="lazy" decoding="async" src="/assets/kohls.png" alt="" aria-hidden="true" />
+            <img loading="lazy" decoding="async" src="/assets/jcpenney.png" alt="" aria-hidden="true" />
+            <img loading="lazy" decoding="async" src="/assets/macys.png" alt="" aria-hidden="true" />
+            <img loading="lazy" decoding="async" src="/assets/burlington.png" alt="" aria-hidden="true" />
           </div>
         </section>
 
@@ -416,7 +419,7 @@ function App() {
           </div>
           <div className="responsibility-grid">
             <figure className="image-reveal responsibility-image">
-              <img src="/assets/editorial-responsibility.webp" alt="Closed-loop water treatment system in a modern textile facility" />
+              <img loading="lazy" decoding="async" src="/assets/editorial-responsibility.webp" alt="Closed-loop water treatment system in a modern textile facility" />
               <div className="orbit-stamp"><span>GO GREEN · ST ·</span></div>
             </figure>
             <div className="responsibility-copy reveal">
@@ -473,7 +476,7 @@ function App() {
             </div>
           </div>
           <footer>
-            <div className="footer-brand"><img src="/assets/silver-textile-logo.svg" alt="" /><span>Silver Textile</span></div>
+            <div className="footer-brand"><img loading="lazy" decoding="async" src="/assets/silver-textile-logo.svg" alt="" /><span>Silver Textile</span></div>
             <p>© {new Date().getFullYear()} ST. Crafted for progress.</p>
             <button onClick={() => scrollTo('#top')}>Back to top ↑</button>
           </footer>

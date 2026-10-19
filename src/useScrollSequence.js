@@ -38,12 +38,12 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
           bitmaps.delete(index)
         }
       }
-      const fetchFrame = (index) => {
+      const fetchFrame = (index, priority = 'high') => {
         if (!blobs.has(index)) {
           const promise = (async () => {
             for (let attempt = 0; attempt < 3; attempt++) {
               try {
-                const response = await fetch(`${prefix}/frame-${String(index).padStart(4, '0')}.webp`, { signal: abort.signal })
+                const response = await fetch(`${prefix}/frame-${String(index).padStart(4, '0')}.webp`, { signal: abort.signal, priority })
                 if (!response.ok) throw new Error(`Frame ${index}: HTTP ${response.status}`)
                 return await response.blob()
               } catch (error) {
@@ -66,7 +66,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
         story.dataset.sequenceState = 'error'
       }
       const loadFrame = (index) => {
-        if (index < 0 || index >= manifest.frameCount) return Promise.resolve()
+        if (index < 0 || (manifest && index >= manifest.frameCount)) return Promise.resolve()
         if (bitmaps.has(index)) return Promise.resolve()
         if (!decoding.has(index)) {
           const promise = fetchFrame(index).then(blob => createImageBitmap(blob)).then(bitmap => {
@@ -144,11 +144,13 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
       observer.observe(canvas)
 
       const initialize = async () => {
-        const response = await fetch('/assets/hero-sequence/manifest.json', { signal: abort.signal })
+        const [response] = await Promise.all([
+          fetch('/assets/hero-sequence/manifest.json', { signal: abort.signal, priority: 'high' }),
+          loadFrame(0),
+        ])
         if (!response.ok) throw new Error('Hero manifest unavailable')
         manifest = await response.json()
         backlog = new FrameBacklog(manifest.frameCount)
-        await loadFrame(0)
         if (disposed) return
         resize()
         draw(0)
@@ -166,11 +168,12 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
         ScrollTrigger.refresh()
         update(trigger)
         // Keep compressed data for reverse playback; decoded image memory is bounded.
-        let cursor = 1
+        for (let index = 1; index <= 6; index++) loadFrame(index).catch(fail)
+        let cursor = 7
         const worker = async () => {
           while (!disposed && cursor < manifest.frameCount) {
             const index = cursor++
-            try { await fetchFrame(index) } catch (error) {
+            try { await fetchFrame(index, 'low') } catch (error) {
               // A distant failure should not stop playback of already loaded frames.
               blobs.delete(index)
               if (disposed) return

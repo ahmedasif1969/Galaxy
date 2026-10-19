@@ -45,3 +45,8 @@ npm run build
 ## Scroll narrative
 
 The displayed frame also selects one of four hero chapters: Made with purpose (0-54), From a thread (55-108), Made with care (109-162), and Ready for the world (163-216). Headings and supporting copy fade between chapters. They follow actual playback, including the backlog and reverse motion. The hero actions remain in a shared, fixed layout footprint across all chapters. Reduced-motion visitors see the opening chapter.
+
+
+## First-load priority
+
+HTML preloads the matching first WebP frame (68,406 bytes desktop or 36,784 bytes mobile) at high priority. The responsive hero picture uses that same asset instead of the 1,992,847-byte PNG. The manifest is also preloaded for visitors allowing motion. First-frame decoding and manifest loading run concurrently. Frames 1-6 are prepared immediately after activation; later compressed frames load through three low-priority workers. Below-the-fold images use native lazy loading to reduce initial bandwidth competition. Priority is a browser hint, and actual timings still depend on network, device and hosting.
