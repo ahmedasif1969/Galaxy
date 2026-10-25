@@ -28,7 +28,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       let ready = false
       let chapter = 0
       let holding = false
-      let holdBoundary = 0
+      let completed = false
       const bufferSize = HERO_BUFFER_FRAMES
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
@@ -76,21 +76,19 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         window.removeEventListener('wheel', preventScroll, true)
         window.removeEventListener('touchmove', preventScroll, true)
         window.removeEventListener('keydown', preventScrollKey)
-        delete story.dataset.sequenceHold
         if (restoreBoundary && variant === 'mobile') {
-          // Fixing the hero removes it from document flow. Restore the exact
-          // pre-hold boundary after returning it to sticky positioning.
-          requestAnimationFrame(() => {
-            if (disposed) return
-            window.scrollTo({ top: holdBoundary, behavior: 'instant' })
-            smoothScroll.current?.scrollTo(holdBoundary, { immediate: true, force: true })
-          })
+          // Restore behind the fixed hero before exposing the document.
+          const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
+          window.scrollTo({ top: end, behavior: 'instant' })
+          smoothScroll.current?.scrollTo(end, { immediate: true, force: true })
         }
+        delete story.dataset.sequenceHold
       }
       const fail = (error) => {
         if (disposed) return
         console.warn('Hero sequence unavailable; keeping the last visible frame.', error)
         releaseHold()
+        story.dataset.sequenceComplete = 'true'
         disposed = true
         abort.abort()
         cancelAnimationFrame(raf)
@@ -157,7 +155,11 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
             story.dataset.backlog = String(backlog.remaining)
             story.dataset.sequenceState = 'playing'
             trim()
-            if (backlog.current === manifest.frameCount - 1) releaseHold(true)
+            if (backlog.current === manifest.frameCount - 1) {
+              completed = true
+              releaseHold(true)
+              story.dataset.sequenceComplete = 'true'
+            }
           } else {
             story.dataset.sequenceState = 'buffering'
           }
@@ -171,6 +173,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       const holdAtHeroEnd = () => {
         if (!ready || disposed) return
         if (story.dataset.skipSequence === 'true') { releaseHold(); return }
+        if (completed) return
         if (backlog.current >= manifest.frameCount - 1) { releaseHold(true); return }
         const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
         if (holding) {
@@ -181,7 +184,6 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
           return
         }
         if (window.scrollY < end - 1) return
-        holdBoundary = end
         holding = true
         story.dataset.sequenceHold = 'true'
         backlog.request(manifest.frameCount - 1)
@@ -221,6 +223,13 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         story.dataset.sequenceState = 'idle'
         story.dataset.backlog = '0'
         const update = (self) => {
+          // Scroll corrections and mobile toolbar resizing must not enqueue
+          // reverse playback while waiting for the final frame.
+          if (holding) return
+          if (completed && self.progress <= 0) {
+            completed = false
+            delete story.dataset.sequenceComplete
+          }
           backlog.request(self.progress * (manifest.frameCount - 1))
           story.dataset.targetFrame = String(backlog.requested)
           story.dataset.backlog = String(backlog.remaining)
@@ -273,7 +282,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         bitmaps.forEach(bitmap => bitmap.close())
         bitmaps.clear()
         blobs.clear()
-        for (const key of ['sequenceReady', 'sequenceState', 'sequenceHold', 'displayedFrame', 'targetFrame', 'backlog']) delete story.dataset[key]
+        for (const key of ['sequenceReady', 'sequenceState', 'sequenceHold', 'sequenceComplete', 'displayedFrame', 'targetFrame', 'backlog']) delete story.dataset[key]
         story.style.removeProperty('--film-progress')
         onChapterChange(0)
       }
