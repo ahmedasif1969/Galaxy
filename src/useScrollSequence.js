@@ -69,12 +69,16 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return
         if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) preventScroll(event)
       }
-      const releaseHold = () => {
+      const releaseHold = (restoreBoundary = false) => {
         if (!holding) return
         holding = false
         window.removeEventListener('wheel', preventScroll, true)
         window.removeEventListener('touchmove', preventScroll, true)
         window.removeEventListener('keydown', preventScrollKey)
+        if (restoreBoundary && variant === 'mobile') {
+          const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
+          window.scrollTo(0, end)
+        }
         delete story.dataset.sequenceHold
       }
       const fail = (error) => {
@@ -147,7 +151,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
             story.dataset.backlog = String(backlog.remaining)
             story.dataset.sequenceState = 'playing'
             trim()
-            if (backlog.current === manifest.frameCount - 1) releaseHold()
+            if (backlog.current === manifest.frameCount - 1) releaseHold(true)
           } else {
             story.dataset.sequenceState = 'buffering'
           }
@@ -161,10 +165,10 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       const holdAtHeroEnd = () => {
         if (!ready || disposed) return
         if (story.dataset.skipSequence === 'true') { releaseHold(); return }
-        if (backlog.current >= manifest.frameCount - 1) { releaseHold(); return }
+        if (backlog.current >= manifest.frameCount - 1) { releaseHold(true); return }
         const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
         if (holding) {
-          if (window.scrollY > end + 1) {
+          if (variant !== 'mobile' && window.scrollY > end + 1) {
             if (smoothScroll.current) smoothScroll.current.scrollTo(end, { immediate: true, force: true })
             else window.scrollTo(0, end)
           }
