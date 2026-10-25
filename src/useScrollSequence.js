@@ -59,6 +59,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       }
       const preventScroll = (event) => {
         if (event.cancelable) event.preventDefault()
+        event.stopImmediatePropagation()
       }
       const preventScrollKey = (event) => {
         if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return
@@ -67,10 +68,9 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       const releaseHold = () => {
         if (!holding) return
         holding = false
-        window.removeEventListener('wheel', preventScroll)
-        window.removeEventListener('touchmove', preventScroll)
+        window.removeEventListener('wheel', preventScroll, true)
+        window.removeEventListener('touchmove', preventScroll, true)
         window.removeEventListener('keydown', preventScrollKey)
-        smoothScroll.current?.start()
         delete story.dataset.sequenceHold
       }
       const fail = (error) => {
@@ -157,18 +157,24 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       const holdAtHeroEnd = () => {
         if (!ready || disposed) return
         if (story.dataset.skipSequence === 'true') { releaseHold(); return }
-        if (holding || backlog.current >= manifest.frameCount - 1) return
+        if (backlog.current >= manifest.frameCount - 1) { releaseHold(); return }
         const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
+        if (holding) {
+          if (window.scrollY > end + 1) {
+            if (smoothScroll.current) smoothScroll.current.scrollTo(end, { immediate: true, force: true })
+            else window.scrollTo(0, end)
+          }
+          return
+        }
         if (window.scrollY < end - 1) return
         holding = true
         story.dataset.sequenceHold = 'true'
         backlog.request(manifest.frameCount - 1)
         story.dataset.targetFrame = String(backlog.requested)
         wake()
-        window.addEventListener('wheel', preventScroll, { passive: false })
-        window.addEventListener('touchmove', preventScroll, { passive: false })
+        window.addEventListener('wheel', preventScroll, { capture: true, passive: false })
+        window.addEventListener('touchmove', preventScroll, { capture: true, passive: false })
         window.addEventListener('keydown', preventScrollKey)
-        smoothScroll.current?.stop()
         if (smoothScroll.current) smoothScroll.current.scrollTo(end, { immediate: true, force: true })
         else window.scrollTo(0, end)
       }
