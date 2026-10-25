@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
-import useScrollSequence from './useScrollSequence'
+import useScrollSequence, { HERO_BUFFER_FRAMES } from './useScrollSequence'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -100,7 +100,7 @@ function App() {
 
   const [heroChapter, setHeroChapter] = useState(0)
   const [introVisible, setIntroVisible] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [bufferProgress, setBufferProgress] = useState({ ready: 0, total: 48 })
+  const [bufferProgress, setBufferProgress] = useState({ ready: 0, total: HERO_BUFFER_FRAMES })
   const reportBufferProgress = useCallback((ready, total) => setBufferProgress({ ready, total }), [])
   const dismissIntro = useCallback(() => setIntroVisible(false), [])
 

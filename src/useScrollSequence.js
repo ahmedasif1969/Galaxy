@@ -5,6 +5,8 @@ import { FrameBacklog } from './frameBacklog'
 
 gsap.registerPlugin(ScrollTrigger)
 
+export const HERO_BUFFER_FRAMES = 144
+
 export default function useScrollSequence(storyRef, canvasRef, onChapterChange, onBufferProgress, onBufferReady, smoothScroll) {
   useEffect(() => {
     const media = gsap.matchMedia()
@@ -26,7 +28,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       let ready = false
       let chapter = 0
       let holding = false
-      const bufferSize = 48
+      const bufferSize = HERO_BUFFER_FRAMES
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
       const cacheLimit = variant === 'mobile' ? 10 : 14
@@ -199,7 +201,8 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         manifest = await response.json()
         backlog = new FrameBacklog(manifest.frameCount)
         if (disposed) return
-        onBufferProgress(1, bufferSize)
+        const openingFrames = Math.min(bufferSize, manifest.frameCount)
+        onBufferProgress(1, openingFrames)
         resize()
         draw(0)
         ready = true
@@ -217,24 +220,24 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         ScrollTrigger.refresh()
         update(trigger)
         holdAtHeroEnd()
-        // Download two seconds of frames, decoding only the first few to bound memory.
+        // Download six seconds of frames, decoding only the first few to bound memory.
         let buffered = 1
         let openingCursor = 1
         const fillOpeningBuffer = async () => {
-          while (!disposed && openingCursor < Math.min(bufferSize, manifest.frameCount)) {
+          while (!disposed && openingCursor < openingFrames) {
             const index = openingCursor++
             if (index < decodedBufferSize) await loadFrame(index)
             else await fetchFrame(index)
             if (disposed) return
             buffered += 1
-            onBufferProgress(buffered, bufferSize)
+            onBufferProgress(buffered, openingFrames)
           }
         }
-        await Promise.all(Array.from({ length: 6 }, fillOpeningBuffer))
+        await Promise.all(Array.from({ length: 10 }, fillOpeningBuffer))
         if (disposed) return
         onBufferReady()
         // Keep compressed data for reverse playback; decoded image memory is bounded.
-        let cursor = bufferSize
+        let cursor = openingFrames
         const worker = async () => {
           while (!disposed && cursor < manifest.frameCount) {
             const index = cursor++

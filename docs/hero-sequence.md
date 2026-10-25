@@ -30,7 +30,7 @@ The script uses FFmpeg to extract 217 sequential WebP images at 24 fps, quality 
 
 The hero's sticky scroll duration stays fixed. If a large scroll reaches its end before frame 216 is drawn, scrolling pauses once at that boundary while the backlog finishes, then resumes. This avoids repeated scroll corrections that can shake the viewport.
 
-The intro now waits for the first 48 frames to download (two seconds at 24 fps). It also decodes the first 12 desktop frames or 8 mobile frames before revealing the page, keeping decoded memory bounded. The percentage counts completed opening frames: decoded for the first group, downloaded for the rest. Six workers fill this opening buffer. Skip intro reveals the page immediately while buffering continues. Later compressed frames continue loading in the background. At the end of the sticky hero, scrolling is held until frame 216 has been drawn; navigation buttons can still jump to their destination.
+The intro now waits for the first 144 frames to download (six seconds at 24 fps). It also decodes the first 12 desktop frames or 8 mobile frames before revealing the page, keeping decoded memory bounded. The percentage counts completed opening frames: decoded for the first group, downloaded for the rest. Ten workers fill this opening buffer. Skip intro reveals the page immediately while buffering continues. Later compressed frames continue loading in the background. At the end of the sticky hero, scrolling is held until frame 216 has been drawn; navigation buttons can still jump to their destination.
 
 ## Files and checks
 
@@ -51,4 +51,4 @@ The displayed frame also selects one of four hero chapters: Made with purpose (0
 
 ## First-load priority
 
-HTML preloads the matching first WebP frame (68,406 bytes desktop or 36,784 bytes mobile) at high priority. The responsive hero picture uses that same asset instead of the 1,992,847-byte PNG. The manifest is also preloaded for visitors allowing motion. First-frame decoding and manifest loading run concurrently. The 48-frame opening buffer uses six workers; later compressed frames load through eight workers, with higher priority during playback. Below-the-fold images load near their sections to reduce initial bandwidth competition. Priority is a browser hint, and actual timings still depend on network, device and hosting.
+HTML preloads the matching first WebP frame (68,406 bytes desktop or 36,784 bytes mobile) at high priority. The responsive hero picture uses that same asset instead of the 1,992,847-byte PNG. The manifest is also preloaded for visitors allowing motion. First-frame decoding and manifest loading run concurrently. The 144-frame opening buffer uses ten workers; later compressed frames load through eight workers, with higher priority during playback. Below-the-fold images load near their sections to reduce initial bandwidth competition. Priority is a browser hint, and actual timings still depend on network, device and hosting.
