@@ -5,7 +5,7 @@ import { FrameBacklog } from './frameBacklog'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const HERO_BUFFER_FRAMES = 144
+export const HERO_BUFFER_FRAMES = 96
 
 export default function useScrollSequence(storyRef, canvasRef, onChapterChange, onBufferProgress, onBufferReady, smoothScroll) {
   useEffect(() => {
@@ -220,7 +220,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         ScrollTrigger.refresh()
         update(trigger)
         holdAtHeroEnd()
-        // Download six seconds of frames, decoding only the first few to bound memory.
+        // Download four seconds of frames, decoding only the first few to bound memory.
         let buffered = 1
         let openingCursor = 1
         const fillOpeningBuffer = async () => {
