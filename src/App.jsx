@@ -207,10 +207,12 @@ function App() {
     if (heroStory.current) heroStory.current.dataset.skipSequence = 'true'
     const target = document.querySelector(id)
     if (target) {
-      if (smoothScroll.current) smoothScroll.current.scrollTo(target, { onComplete: () => {
-        if (id === '#top' && heroStory.current) heroStory.current.dataset.skipSequence = 'false'
-      } })
-      else {
+      if (smoothScroll.current) {
+        smoothScroll.current.start()
+        smoothScroll.current.scrollTo(target, { onComplete: () => {
+          if (id === '#top' && heroStory.current) heroStory.current.dataset.skipSequence = 'false'
+        } })
+      } else {
         target.scrollIntoView({ behavior: 'instant' })
         if (id === '#top' && heroStory.current) heroStory.current.dataset.skipSequence = 'false'
       }
