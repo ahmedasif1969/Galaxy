@@ -29,6 +29,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       let chapter = 0
       let holding = false
       let completed = false
+      let unlockPage = null
       const bufferSize = HERO_BUFFER_FRAMES
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
@@ -70,18 +71,14 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return
         if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) preventScroll(event)
       }
-      const releaseHold = (restoreBoundary = false) => {
+      const releaseHold = () => {
         if (!holding) return
-        holding = false
         window.removeEventListener('wheel', preventScroll, true)
         window.removeEventListener('touchmove', preventScroll, true)
         window.removeEventListener('keydown', preventScrollKey)
-        if (restoreBoundary && variant === 'mobile') {
-          // Restore behind the fixed hero before exposing the document.
-          const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
-          window.scrollTo({ top: end, behavior: 'instant' })
-          smoothScroll.current?.scrollTo(end, { immediate: true, force: true })
-        }
+        unlockPage?.()
+        unlockPage = null
+        holding = false
         delete story.dataset.sequenceHold
       }
       const fail = (error) => {
@@ -157,7 +154,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
             trim()
             if (backlog.current === manifest.frameCount - 1) {
               completed = true
-              releaseHold(true)
+              releaseHold()
               story.dataset.sequenceComplete = 'true'
             }
           } else {
@@ -174,8 +171,8 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         if (!ready || disposed) return
         if (story.dataset.skipSequence === 'true') { releaseHold(); return }
         if (completed) return
-        if (backlog.current >= manifest.frameCount - 1) { releaseHold(true); return }
-        const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
+        if (backlog.current >= manifest.frameCount - 1) { releaseHold(); return }
+        const end = story.getBoundingClientRect().bottom + window.scrollY - story.querySelector('.hero').getBoundingClientRect().height
         if (holding) {
           if (variant !== 'mobile' && window.scrollY > end + 1) {
             if (smoothScroll.current) smoothScroll.current.scrollTo(end, { immediate: true, force: true })
@@ -194,6 +191,19 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         window.addEventListener('keydown', preventScrollKey)
         if (smoothScroll.current) smoothScroll.current.scrollTo(end, { immediate: true, force: true })
         else window.scrollTo(0, end)
+        if (variant === 'mobile') {
+          // Cancel native momentum rather than letting the page coast behind
+          // the fixed hero. Preserve inline styles owned by other components.
+          const body = document.body
+          const properties = ['position', 'top', 'left', 'right', 'width']
+          const saved = properties.map(key => [key, body.style[key]])
+          Object.assign(body.style, { position: 'fixed', top: `${-end}px`, left: '0', right: '0', width: '100%' })
+          unlockPage = () => {
+            for (const [key, value] of saved) body.style[key] = value
+            window.scrollTo({ top: end, behavior: 'instant' })
+            smoothScroll.current?.scrollTo(end, { immediate: true, force: true })
+          }
+        }
       }
       const resize = () => {
         const rect = canvas.getBoundingClientRect()
