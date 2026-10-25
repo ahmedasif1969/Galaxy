@@ -26,10 +26,11 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       let ready = false
       let chapter = 0
       let holding = false
-      const bufferSize = 12
+      const bufferSize = 48
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
       const cacheLimit = variant === 'mobile' ? 10 : 14
+      const decodedBufferSize = variant === 'mobile' ? 8 : 12
       const prefix = `/assets/hero-sequence/${variant}`
 
       const trim = () => {
@@ -215,15 +216,20 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         ScrollTrigger.refresh()
         update(trigger)
         holdAtHeroEnd()
-        // A decoded half-second buffer makes the intro useful before it clears.
+        // Download two seconds of frames, decoding only the first few to bound memory.
         let buffered = 1
-        await Promise.all(Array.from({ length: bufferSize - 1 }, (_, offset) =>
-          loadFrame(offset + 1).then(() => {
+        let openingCursor = 1
+        const fillOpeningBuffer = async () => {
+          while (!disposed && openingCursor < Math.min(bufferSize, manifest.frameCount)) {
+            const index = openingCursor++
+            if (index < decodedBufferSize) await loadFrame(index)
+            else await fetchFrame(index)
             if (disposed) return
             buffered += 1
             onBufferProgress(buffered, bufferSize)
-          }),
-        ))
+          }
+        }
+        await Promise.all(Array.from({ length: 6 }, fillOpeningBuffer))
         if (disposed) return
         onBufferReady()
         // Keep compressed data for reverse playback; decoded image memory is bounded.

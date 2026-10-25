@@ -30,7 +30,7 @@ The script uses FFmpeg to extract 217 sequential WebP images at 24 fps, quality 
 
 The hero's sticky scroll duration stays fixed. If a large scroll reaches its end before frame 216 is drawn, scrolling pauses once at that boundary while the backlog finishes, then resumes. This avoids repeated scroll corrections that can shake the viewport.
 
-The intro now waits for 12 decoded opening frames (half a second at 24 fps) and shows the actual ready count and percentage. Skip intro reveals the page immediately while buffering continues. Later compressed frames continue loading in the background. At the end of the sticky hero, scrolling is held until frame 216 has been drawn; navigation buttons can still jump to their destination.
+The intro now waits for the first 48 frames to download (two seconds at 24 fps). It also decodes the first 12 desktop frames or 8 mobile frames before revealing the page, keeping decoded memory bounded. The percentage counts completed opening frames: decoded for the first group, downloaded for the rest. Six workers fill this opening buffer. Skip intro reveals the page immediately while buffering continues. Later compressed frames continue loading in the background. At the end of the sticky hero, scrolling is held until frame 216 has been drawn; navigation buttons can still jump to their destination.
 
 ## Files and checks
 

@@ -100,7 +100,7 @@ function App() {
 
   const [heroChapter, setHeroChapter] = useState(0)
   const [introVisible, setIntroVisible] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [bufferProgress, setBufferProgress] = useState({ ready: 0, total: 12 })
+  const [bufferProgress, setBufferProgress] = useState({ ready: 0, total: 48 })
   const reportBufferProgress = useCallback((ready, total) => setBufferProgress({ ready, total }), [])
   const dismissIntro = useCallback(() => setIntroVisible(false), [])
 
