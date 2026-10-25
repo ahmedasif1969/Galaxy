@@ -30,6 +30,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
       const cacheLimit = variant === 'mobile' ? 10 : 14
+      const prefetchAhead = cacheLimit - 2
       const decodedBufferSize = variant === 'mobile' ? 8 : 12
       const prefix = `/assets/hero-sequence/${variant}`
 
@@ -122,7 +123,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         if (next === null) return
         const direction = Math.sign(next - backlog.current)
         const endpoint = backlog.targets[0]
-        for (let offset = 1; offset <= 6; offset++) {
+        for (let offset = 1; offset <= prefetchAhead; offset++) {
           const index = backlog.current + direction * offset
           if ((direction > 0 && index > endpoint) || (direction < 0 && index < endpoint)) break
           loadFrame(index).catch(fail)
@@ -237,14 +238,14 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         const worker = async () => {
           while (!disposed && cursor < manifest.frameCount) {
             const index = cursor++
-            try { await fetchFrame(index, 'low') } catch (error) {
+            try { await fetchFrame(index, backlog.remaining > 0 ? 'high' : 'low') } catch (error) {
               // A distant failure should not stop playback of already loaded frames.
               blobs.delete(index)
               if (disposed) return
             }
           }
         }
-        await Promise.all([worker(), worker(), worker()])
+        await Promise.all(Array.from({ length: 8 }, worker))
       }
       initialize().catch(fail)
       return () => {
