@@ -28,7 +28,9 @@ The script uses FFmpeg to extract 217 sequential WebP images at 24 fps, quality 
 11. If the next image is not ready, hold the current frame until it loads. Retry failed image fetches up to three attempts. A persistent playback failure keeps the last visible image and preserves scroll geometry. Before initialization, the poster remains the fallback.
 12. On resize, redraw the current frame with the new cover crop. On unmount or motion preference changes, abort requests, remove triggers and observers, cancel animation, and release image memory.
 
-The hero's sticky scroll duration stays fixed; a large scroll can take the hero off screen while its queue finishes. Scroll input itself is not locked.
+The hero's sticky scroll duration stays fixed. If a large scroll reaches its end before frame 216 is drawn, the scroll position is held there while the backlog finishes.
+
+The intro now waits for 12 decoded opening frames (half a second at 24 fps) and shows the actual ready count and percentage. Skip intro reveals the page immediately while buffering continues. Later compressed frames continue loading in the background. At the end of the sticky hero, scrolling is held until frame 216 has been drawn; navigation buttons can still jump to their destination.
 
 ## Files and checks
 

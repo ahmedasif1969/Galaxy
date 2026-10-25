@@ -27,6 +27,19 @@ img { display: block; width: 100%; }
 ::selection { background: var(--acid); color: var(--ink); }
 
 .site-shell { overflow: clip; }
+.intro-loader { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; justify-content: space-between; padding: clamp(1.5rem, 4vw, 4.5rem); background: #171915; color: var(--ivory); }
+.intro-loader-top { display: flex; justify-content: space-between; gap: 1rem; font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .15em; }
+.intro-loader-top span:last-child { opacity: .55; }
+.intro-loader-center { width: min(100%, 44rem); margin: auto 0; }
+.intro-loader-label { margin: 0 0 1rem; color: var(--acid); font-size: .72rem; text-transform: uppercase; letter-spacing: .18em; }
+.intro-loader-count { margin: 0 0 1.75rem; font-size: clamp(6rem, 18vw, 15rem); font-weight: 600; line-height: .8; letter-spacing: -.09em; font-variant-numeric: tabular-nums; }
+.intro-loader-count span { margin-left: .1em; font-size: .28em; vertical-align: top; letter-spacing: 0; }
+.intro-loader-track { height: 2px; overflow: hidden; background: rgba(241,238,229,.25); }
+.intro-loader-track span { display: block; width: 100%; height: 100%; background: var(--acid); transform-origin: left center; transition: transform .2s ease; }
+.intro-loader-detail { margin: .9rem 0 0; color: rgba(241,238,229,.6); font-size: .72rem; letter-spacing: .08em; }
+.intro-skip { display: inline-flex; align-items: center; gap: .75rem; align-self: flex-end; color: var(--ivory); font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; }
+.intro-skip .arrow-icon { width: 1.15rem; }
+.intro-skip:hover { color: var(--acid); }
 .section-pad { padding: 8.5rem clamp(1.25rem, 4vw, 4.5rem); }
 .grid-pad { padding-inline: clamp(1.25rem, 4vw, 4.5rem); }
 .dark-section { background: var(--ink); color: var(--ivory); }

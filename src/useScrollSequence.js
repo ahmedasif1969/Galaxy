@@ -5,7 +5,7 @@ import { FrameBacklog } from './frameBacklog'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function useScrollSequence(storyRef, canvasRef, onChapterChange) {
+export default function useScrollSequence(storyRef, canvasRef, onChapterChange, onBufferProgress, onBufferReady, smoothScroll) {
   useEffect(() => {
     const media = gsap.matchMedia()
     media.add('(prefers-reduced-motion: no-preference)', () => {
@@ -25,6 +25,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
       let lastPaint = 0
       let ready = false
       let chapter = 0
+      const bufferSize = 12
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
       const cacheLimit = variant === 'mobile' ? 10 : 14
@@ -64,6 +65,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
         trigger?.kill()
         // Retain the scroll geometry after activation to avoid a layout jump.
         story.dataset.sequenceState = 'error'
+        onBufferReady()
       }
       const loadFrame = (index) => {
         if (index < 0 || (manifest && index >= manifest.frameCount)) return Promise.resolve()
@@ -133,6 +135,17 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
       const wake = () => {
         if (!disposed && ready && !raf && backlog.next() !== null) raf = requestAnimationFrame(tick)
       }
+      const holdAtHeroEnd = () => {
+        if (!ready || disposed) return
+        if (story.dataset.skipSequence === 'true' || backlog.current >= manifest.frameCount - 1) return
+        const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
+        if (window.scrollY <= end + 1) return
+        backlog.request(manifest.frameCount - 1)
+        story.dataset.targetFrame = String(backlog.requested)
+        wake()
+        if (smoothScroll.current) smoothScroll.current.scrollTo(end, { immediate: true, force: true })
+        else window.scrollTo(0, end)
+      }
       const resize = () => {
         const rect = canvas.getBoundingClientRect()
         const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -152,6 +165,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
         manifest = await response.json()
         backlog = new FrameBacklog(manifest.frameCount)
         if (disposed) return
+        onBufferProgress(1, bufferSize)
         resize()
         draw(0)
         ready = true
@@ -164,12 +178,24 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
           story.dataset.backlog = String(backlog.remaining)
           wake()
         }
-        trigger = ScrollTrigger.create({ trigger: story, start: 'top top', end: 'bottom bottom', onUpdate: update, onRefresh: update })
+        trigger = ScrollTrigger.create({ trigger: story, start: 'top top', end: 'bottom bottom', onUpdate: (self) => { update(self); holdAtHeroEnd() }, onRefresh: (self) => { update(self); holdAtHeroEnd() } })
+        window.addEventListener('scroll', holdAtHeroEnd, { passive: true })
         ScrollTrigger.refresh()
         update(trigger)
+        holdAtHeroEnd()
+        // A decoded half-second buffer makes the intro useful before it clears.
+        let buffered = 1
+        await Promise.all(Array.from({ length: bufferSize - 1 }, (_, offset) =>
+          loadFrame(offset + 1).then(() => {
+            if (disposed) return
+            buffered += 1
+            onBufferProgress(buffered, bufferSize)
+          }),
+        ))
+        if (disposed) return
+        onBufferReady()
         // Keep compressed data for reverse playback; decoded image memory is bounded.
-        for (let index = 1; index <= 6; index++) loadFrame(index).catch(fail)
-        let cursor = 7
+        let cursor = bufferSize
         const worker = async () => {
           while (!disposed && cursor < manifest.frameCount) {
             const index = cursor++
@@ -188,6 +214,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
         abort.abort()
         cancelAnimationFrame(raf)
         observer.disconnect()
+        window.removeEventListener('scroll', holdAtHeroEnd)
         trigger?.kill()
         bitmaps.forEach(bitmap => bitmap.close())
         bitmaps.clear()
@@ -198,5 +225,5 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange) 
       }
     })
     return () => media.revert()
-  }, [storyRef, canvasRef, onChapterChange])
+  }, [storyRef, canvasRef, onChapterChange, onBufferProgress, onBufferReady, smoothScroll])
 }

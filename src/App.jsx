@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
@@ -99,8 +99,12 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const [heroChapter, setHeroChapter] = useState(0)
+  const [introVisible, setIntroVisible] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [bufferProgress, setBufferProgress] = useState({ ready: 0, total: 12 })
+  const reportBufferProgress = useCallback((ready, total) => setBufferProgress({ ready, total }), [])
+  const dismissIntro = useCallback(() => setIntroVisible(false), [])
 
-  useScrollSequence(heroStory, heroCanvas, setHeroChapter)
+  useScrollSequence(heroStory, heroCanvas, setHeroChapter, reportBufferProgress, dismissIntro, smoothScroll)
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -188,17 +192,48 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!introVisible) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    smoothScroll.current?.stop()
+    return () => {
+      document.body.style.overflow = previousOverflow
+      smoothScroll.current?.start()
+    }
+  }, [introVisible])
+
   const scrollTo = (id) => {
+    if (heroStory.current) heroStory.current.dataset.skipSequence = 'true'
     const target = document.querySelector(id)
     if (target) {
-      if (smoothScroll.current) smoothScroll.current.scrollTo(target)
-      else target.scrollIntoView({ behavior: 'instant' })
+      if (smoothScroll.current) smoothScroll.current.scrollTo(target, { onComplete: () => {
+        if (id === '#top' && heroStory.current) heroStory.current.dataset.skipSequence = 'false'
+      } })
+      else {
+        target.scrollIntoView({ behavior: 'instant' })
+        if (id === '#top' && heroStory.current) heroStory.current.dataset.skipSequence = 'false'
+      }
     }
     setMenuOpen(false)
   }
 
   return (
     <div ref={root} className="site-shell">
+      {introVisible && (
+        <div className="intro-loader" role="dialog" aria-modal="true" aria-label="Preparing your experience">
+          <div className="intro-loader-top"><span>Silver Textile</span><span>Fabric to finished</span></div>
+          <div className="intro-loader-center">
+            <p className="intro-loader-label">Preparing your experience</p>
+            <p className="intro-loader-count" aria-live="polite">{Math.round(bufferProgress.ready / bufferProgress.total * 100)}<span>%</span></p>
+            <div className="intro-loader-track" role="progressbar" aria-label="Experience loading progress" aria-valuenow={bufferProgress.ready} aria-valuemin={0} aria-valuemax={bufferProgress.total}>
+              <span style={{ transform: `scaleX(${bufferProgress.ready / bufferProgress.total})` }} />
+            </div>
+            <p className="intro-loader-detail">The story begins in a moment.</p>
+          </div>
+          <button className="intro-skip" onClick={dismissIntro}>Skip intro <Arrow /></button>
+        </div>
+      )}
       <header className="site-nav">
         <div className="nav-inner">
           <button className="brand" onClick={() => scrollTo('#top')} aria-label="Silver Textile home">
