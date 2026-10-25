@@ -28,6 +28,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
       let ready = false
       let chapter = 0
       let holding = false
+      let holdBoundary = 0
       const bufferSize = HERO_BUFFER_FRAMES
       // Choose once per mount so resizing never replaces the playback sequence.
       const variant = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop'
@@ -75,11 +76,16 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
         window.removeEventListener('wheel', preventScroll, true)
         window.removeEventListener('touchmove', preventScroll, true)
         window.removeEventListener('keydown', preventScrollKey)
-        if (restoreBoundary && variant === 'mobile') {
-          const end = story.getBoundingClientRect().bottom + window.scrollY - window.innerHeight
-          window.scrollTo(0, end)
-        }
         delete story.dataset.sequenceHold
+        if (restoreBoundary && variant === 'mobile') {
+          // Fixing the hero removes it from document flow. Restore the exact
+          // pre-hold boundary after returning it to sticky positioning.
+          requestAnimationFrame(() => {
+            if (disposed) return
+            window.scrollTo({ top: holdBoundary, behavior: 'instant' })
+            smoothScroll.current?.scrollTo(holdBoundary, { immediate: true, force: true })
+          })
+        }
       }
       const fail = (error) => {
         if (disposed) return
@@ -175,6 +181,7 @@ export default function useScrollSequence(storyRef, canvasRef, onChapterChange, 
           return
         }
         if (window.scrollY < end - 1) return
+        holdBoundary = end
         holding = true
         story.dataset.sequenceHold = 'true'
         backlog.request(manifest.frameCount - 1)
